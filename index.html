@@ -1,0 +1,478 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VB TRAVEL GLOBAL INC | Casilleros China - Venezuela y Venta al Mayor</title>
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0a192f;
+      --navy-light: #172a45;
+      --gold: #d4af37;
+      --gold-hover: #b89628;
+      --white: #ffffff;
+      --gray-bg: #f4f6f9;
+      --text-dark: #1e293b;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background-color: var(--gray-bg);
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+
+    header {
+      background-color: var(--navy);
+      color: var(--white);
+      padding: 1rem 5%;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid var(--gold);
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--white);
+    }
+
+    .logo span {
+      color: var(--gold);
+    }
+
+    nav a {
+      color: var(--white);
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    nav a:hover {
+      color: var(--gold);
+    }
+
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      color: var(--white);
+      padding: 5rem 5%;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background-color: rgba(212, 175, 55, 0.15);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      max-width: 700px;
+      margin: 0 auto 2rem auto;
+      color: #cbd5e1;
+      font-size: 1.05rem;
+    }
+
+    .btn-gold {
+      background-color: var(--gold);
+      color: var(--navy);
+      padding: 0.9rem 2rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .btn-gold:hover {
+      background-color: var(--gold-hover);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      color: var(--white);
+      border: 2px solid var(--gold);
+      padding: 0.85rem 1.8rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      display: inline-block;
+      margin-left: 1rem;
+      transition: all 0.3s;
+    }
+
+    .btn-outline:hover {
+      background-color: var(--gold);
+      color: var(--navy);
+    }
+
+    section {
+      padding: 4rem 5%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .section-title h2 {
+      font-size: 2rem;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+
+    .section-title .line {
+      width: 70px;
+      height: 4px;
+      background-color: var(--gold);
+      margin: 0 auto;
+      border-radius: 2px;
+    }
+
+    .product-card {
+      background-color: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      border-top: 5px solid var(--gold);
+    }
+
+    .product-visual {
+      background: linear-gradient(145deg, var(--navy), var(--navy-light));
+      color: var(--white);
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .price-tag {
+      background-color: var(--gold);
+      color: var(--navy);
+      padding: 1rem 1.8rem;
+      border-radius: 12px;
+      margin: 1.5rem 0;
+    }
+
+    .price-tag .amount {
+      font-size: 2.5rem;
+      font-weight: 800;
+      display: block;
+      line-height: 1;
+    }
+
+    .price-tag .min {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .product-info {
+      padding: 2.5rem;
+    }
+
+    .product-info h3 {
+      font-size: 1.6rem;
+      color: var(--navy);
+      margin-bottom: 1rem;
+    }
+
+    .features-list {
+      list-style: none;
+      margin: 1.5rem 0;
+    }
+
+    .features-list li {
+      margin-bottom: 0.7rem;
+      padding-left: 1.8rem;
+      position: relative;
+    }
+
+    .features-list li::before {
+      content: "✔";
+      color: var(--gold);
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+
+    .included-banner {
+      background-color: #fef9c3;
+      border-left: 4px solid var(--gold);
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #854d0e;
+      margin-bottom: 1.5rem;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    .service-box {
+      background: var(--white);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      border-bottom: 4px solid var(--navy);
+      transition: transform 0.3s;
+    }
+
+    .service-box:hover {
+      transform: translateY(-5px);
+      border-bottom-color: var(--gold);
+    }
+
+    .service-box h3 {
+      color: var(--navy);
+      margin-bottom: 0.8rem;
+      font-size: 1.2rem;
+    }
+
+    .form-container {
+      background-color: var(--white);
+      padding: 3rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      max-width: 750px;
+      margin: 0 auto;
+      border-top: 5px solid var(--navy);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-group input {
+      padding: 0.8rem 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--gold);
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 1.5rem;
+      font-size: 1.05rem;
+    }
+
+    footer {
+      background-color: var(--navy);
+      color: var(--white);
+      text-align: center;
+      padding: 2.5rem 5%;
+      margin-top: 3rem;
+      border-top: 3px solid var(--gold);
+    }
+
+    footer p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 768px) {
+      .product-card {
+        grid-template-columns: 1fr;
+      }
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .btn-outline {
+        margin-left: 0;
+        margin-top: 0.8rem;
+      }
+      nav {
+        display: none;
+      }
+      .hero h1 {
+        font-size: 1.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">VB TRAVEL <span>GLOBAL INC</span></div>
+    <nav>
+      <a href="#mayorista">Venta al Mayor</a>
+      <a href="#servicios">Servicios</a>
+      <a href="#casillero">Abrir Casillero</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <span class="hero-badge">IMPORTACIONES DIRECTAS Y LOGÍSTICA INTERNACIONAL</span>
+    <h1>Tu Puente Comercial de China y EE. UU. hacia Venezuela</h1>
+    <p>Creamos tu casillero internacional y gestionamos tus compras al mayor directo de fábrica con entrega segura puerta a puerta.</p>
+    <a href="#casillero" class="btn-gold">Crear mi Casillero Gratis</a>
+    <a href="#mayorista" class="btn-outline">Ver Oferta Mayorista</a>
+  </div>
+
+  <section id="mayorista">
+    <div class="section-title">
+      <h2>Oportunidad Mayorista Destacada</h2>
+      <div class="line"></div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-visual">
+        <span style="font-size: 4rem;">🌬️☀️</span>
+        <h3 style="margin-top: 1rem; font-size: 1.4rem;">Ventilador Solar Recargable 8"</h3>
+        <p style="font-size: 0.9rem; color: #cbd5e1; margin-top: 0.5rem;">Kit Completo de Alta Rotación</p>
+        <div class="price-tag">
+          <span class="amount">$40 USD</span>
+          <span class="min">Por unidad | Compra mínima: 20 unidades</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--gold);">Reventa sugerida al detal: $45 – $60 USD</p>
+      </div>
+
+      <div class="product-info">
+        <h3>Importa tu lote directo de fábrica sin complicaciones</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Ideal para tiendas, comerciantes y revendedores en Venezuela. Equipos diseñados para máxima autonomía ante cortes eléctricos.</p>
+        
+        <ul class="features-list">
+          <li><strong>Kit Completo:</strong> Incluye panel solar independiente y 2 bombillos LED con cable.</li>
+          <li><strong>Batería Extraíble:</strong> Litio de 4000 mAh – 6000 mAh (fácil de reemplazar).</li>
+          <li><strong>Multifunción:</strong> 2 velocidades de viento, luz nocturna integrada y puerto USB para cargar celulares.</li>
+          <li><strong>Casillero Incluido:</strong> Registramos tu código de cliente y gestionamos toda la logística por ti.</li>
+        </ul>
+
+        <div class="included-banner">
+          ⚡ Casillero internacional incluido sin costo adicional
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="servicios">
+    <div class="section-title">
+      <h2>Nuestros Servicios</h2>
+      <div class="line"></div>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-box">
+        <h3>Casillero Internacional</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Dirección propia en China y EE. UU. para recibir tus compras y enviarlas a Venezuela.</p>
+      </div>
+      <div class="service-box">
+        <h3>Compra al Mayor</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Gestionamos pedidos directos de fábrica con precios de distribuidor.</p>
+      </div>
+      <div class="service-box">
+        <h3>Envío Puerta a Puerta</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Logística completa desde el origen hasta tu domicilio en Venezuela.</p>
+      </div>
+      <div class="service-box">
+        <h3>Asesoría Aduanera</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Te guiamos en los trámites de importación y nacionalización de mercancía.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="casillero">
+    <div class="section-title">
+      <h2>Abrir tu Casillero Gratis</h2>
+      <div class="line"></div>
+    </div>
+
+    <div class="form-container">
+      <form>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nombres y Apellidos</label>
+            <input type="text" placeholder="Juan Pérez" required />
+          </div>
+          <div class="form-group">
+            <label>Correo Electrónico</label>
+            <input type="email" placeholder="correo@ejemplo.com" required />
+          </div>
+          <div class="form-group full">
+            <label>Teléfono (con código de país)</label>
+            <input type="tel" placeholder="+58 412-0000000" required />
+          </div>
+          <div class="form-group">
+            <label>Ciudad</label>
+            <input type="text" placeholder="Caracas" required />
+          </div>
+          <div class="form-group full">
+            <label>Tipo de Casillero</label>
+            <input type="text" placeholder="China / EE. UU." required />
+          </div>
+        </div>
+        <button type="submit" class="submit-btn btn-gold">Solicitar Casillero</button>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 VB TRAVEL GLOBAL INC. Todos los derechos reservados.</p>
+  </footer>
+
+</body>
+</html>
