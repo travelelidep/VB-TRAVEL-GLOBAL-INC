@@ -1,0 +1,285 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VB TRAVEL GLOBAL INC | Tu Casillero</title>
+<style>
+:root{--navy:#0a192f;--navy-light:#172a45;--gold:#d4af37;--gold-hover:#b89628;--white:#ffffff;--gray:#f4f6f9;--text:#1e293b;--muted:#64748b}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif}
+body{background:var(--gray);color:var(--text);overflow:hidden}
+a{color:inherit;text-decoration:none}
+header#head-nav{background:var(--navy);color:var(--white);position:fixed;top:0;left:0;right:0;height:50px;z-index:1100;border-bottom:3px solid var(--gold);display:flex;align-items:center;padding:0 1rem}
+header#head-nav .navbar-brand{font-weight:700;letter-spacing:1px;font-size:1.15rem;display:flex;align-items:center;gap:8px}
+header#head-nav .navbar-brand span{color:var(--gold)}
+header#head-nav .user-nav{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:0.85rem}
+header#head-nav .stopwatch{color:var(--gold);font-family:monospace;font-weight:700}
+header#head-nav .btn-link{background:none;border:none;color:var(--white);cursor:pointer;padding:4px 8px;border-radius:4px}
+header#head-nav .btn-link:hover{background:rgba(255,255,255,0.1)}
+header#head-nav .profile_menu{position:relative;cursor:pointer}
+header#head-nav .profile_menu img{width:30px;height:30px;border-radius:50%;vertical-align:middle;border:2px solid var(--gold)}
+header#head-nav .dropdown-menu{display:none;position:absolute;right:0;top:100%;background:var(--navy-light);min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.3);border-radius:6px;padding:8px 0;z-index:1200;border:1px solid var(--gold)}
+header#head-nav .profile_menu:hover .dropdown-menu{display:block}
+header#head-nav .dropdown-menu li{list-style:none}
+header#head-nav .dropdown-menu a{display:block;padding:8px 16px;color:#cbd5e1;font-size:0.9rem}
+header#head-nav .dropdown-menu a:hover{background:rgba(212,175,55,0.15);color:var(--white)}
+#cl-wrapper{position:fixed;top:50px;left:0;bottom:0;width:260px;background:var(--navy);color:var(--white);z-index:1050;overflow-y:auto;display:flex;flex-direction:column}
+#cl-wrapper .cl-toggle{display:none;padding:12px;background:rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);cursor:pointer}
+#cl-wrapper .side-user{padding:12px;border-bottom:1px solid rgba(255,255,255,0.08)}
+#cl-wrapper .cl-vnavigation{list-style:none;flex:1;overflow-y:auto;padding:8px 0}
+#cl-wrapper .cl-vnavigation li{border-bottom:1px solid rgba(255,255,255,0.06)}
+#cl-wrapper .cl-vnavigation li a{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#cbd5e1;font-size:0.9rem;transition:all .2s}
+#cl-wrapper .cl-vnavigation li a:hover{background:rgba(255,255,255,0.08);color:var(--white)}
+#cl-wrapper .cl-vnavigation li a i{width:24px;text-align:center;color:var(--gold)}
+#cl-wrapper .cl-vnavigation li a span{flex:1}
+#cl-wrapper .cl-vnavigation li ul.sub-menu{display:none;list-style:none;padding-left:20px}
+#cl-wrapper .cl-vnavigation li ul.sub-menu li a{padding-left:36px;font-size:0.85rem;color:#94a3b8}
+#pcont{margin-left:260px;margin-top:50px;right:0;bottom:0;left:260px;top:50px;position:fixed;overflow:auto;background:var(--gray);padding:1.5rem}
+.page-head{max-width:1100px;margin:0 auto 2rem}
+.page-head p{margin-bottom:0.9rem;line-height:1.6}
+.page-head strong{color:var(--navy)}
+.page-head hr{border:none;border-top:1px solid #cbd5e1;margin:1.2rem 0}
+.block-flat{background:var(--white);border-radius:12px;padding:1.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.06);max-width:700px;margin:0 auto 2rem}
+.block-flat p{margin-bottom:0.8rem}
+.block-flat img{width:100%;max-width:200px;height:auto;display:block;margin:0 auto 1rem;border-radius:8px;background:#eee}
+.btn-gold{background:var(--gold);color:var(--navy);border:none;padding:0.7rem 1.4rem;border-radius:8px;font-weight:700;cursor:pointer;display:inline-block;margin:0.4rem;transition:background .2s}
+.btn-gold:hover{background:var(--gold-hover)}
+.btn-outline{background:transparent;color:var(--white);border:2px solid var(--gold);padding:0.65rem 1.3rem;border-radius:8px;font-weight:600;cursor:pointer;display:inline-block;margin:0.4rem;transition:all .2s}
+.btn-outline:hover{background:var(--gold);color:var(--navy)}
+.text-center{text-align:center}
+.marker{font-weight:700;color:var(--gold)}
+.modal{display:none;position:fixed;z-index:1300;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal-dialog{background:var(--white);border-radius:10px;width:90%;max-width:520px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.modal-header{background:var(--navy);color:var(--white);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:1.1rem}
+.close{background:none;border:none;color:var(--white);font-size:1.6rem;cursor:pointer;line-height:1}
+.modal-body{padding:16px}
+.modal-footer{padding:12px 16px;text-align:center;border-top:1px solid #e2e8f0}
+.alert{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:0.9rem}
+.alert-danger{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.alert-success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:0.85rem;font-weight:600;color:var(--navy);margin-bottom:4px}
+.form-group select,.form-group input{width:100%;padding:7px 10px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.9rem}
+.spacer{margin-top:1rem}
+@media (max-width:768px){
+#cl-wrapper{position:fixed;left:-260px;transition:left .3s;z-index:1150;width:260px}
+#cl-wrapper.open{left:0}
+#cl-wrapper .cl-toggle{display:block}
+#pcont{margin-left:0;left:0;right:0;width:auto}
+header#head-nav{padding:0 0.75rem}
+}
+</style>
+</head>
+<body>
+<header id="head-nav" class="navbar navbar-default navbar-fixed-top">
+<div class="container-fluid" style="width:100%">
+<div class="navbar-header" style="display:flex;align-items:center;gap:10px">
+<button type="button" class="navbar-toggle cl-toggle" id="btnSidebar"><i style="font-family:serif">&#9776;</i></button>
+<div class="navbar-brand">VB TRAVEL <span>GLOBAL INC</span></div>
+</div>
+<div class="navbar-collapse collapse" style="display:flex;align-items:center;gap:14px;margin-left:auto">
+<li style="list-style:none"><div id="stopwatch" class="stopwatch">00:00:00</div></li>
+<li style="list-style:none"><button class="btn-link" onclick="extentTime()" title="Extender Tiempo"><i style="font-family:serif">&#xf017;</i></button></li>
+<li style="list-style:none" class="dropdown profile_menu">
+<img alt="Avatar" src="https://ui-avatars.com/api/?name=Usuario&background=0a192f&color=fff">
+<span>Usuario</span><b class="caret" style="font-family:serif">&#9660;</b>
+<ul class="dropdown-menu">
+<li><a href="#casillero"><i style="font-family:serif">&#xf007;</i> Mi Casillero</a></li>
+<li><a href="#datos"><i style="font-family:serif">&#xf023;</i> Tus Datos</a></li>
+<li><a href="#idioma" data-lang><i style="font-family:serif">&#xf0ab;</i> Cambiar Idioma</a></li>
+<li style="border-top:1px solid rgba(255,255,255,0.08)"></li>
+<li><a href="#salir" onclick="return confirm('¿Cerrar sesión?')"><i style="font-family:serif">&#xf08b;</i> Salir</a></li>
+</ul>
+</li>
+<li style="list-style:none"><a href="#" style="color:#cbd5e1;font-size:1.1rem"><i style="font-family:serif">&#xf0e0;</i> <span class="bubble" style="background:var(--gold);color:var(--navy);font-size:0.7rem;padding:1px 6px;border-radius:10px">1</span></a></li>
+</div>
+</div>
+</header>
+<div id="cl-wrapper" class="fixed-menu">
+<div class="cl-toggle" id="btnSidebarMobile" style="display:none"><i style="font-family:serif">&#9776;</i></div>
+<div class="side-user"></div>
+<ul class="cl-vnavigation">
+<li><a href="#principal"><i style="font-family:serif">&#xf015;</i><span>Principal</span></a></li>
+<li><a href="#paquetes"><i style="font-family:serif">&#xf02d;</i><span>Paquetes</span></a>
+<ul class="sub-menu"><li><a href="#bodegas">Bodegas</a></li><li><a href="#rastrear">Rastrear Paquete</a></li></ul>
+</li>
+<li><a href="#reempaques"><i style="font-family:serif">&#xf0c6;</i><span>Reempaques</span></a>
+<ul class="sub-menu"><li><a href="#solicitar">Solicitudes de Reempaque</a></li><li><a href="#tracking">Tracking</a></li><li><a href="#whrecs">Bodegas</a></li></ul>
+</li>
+<li><a href="#facturacion"><i style="font-family:serif">&#xf02d;</i><span>Facturación</span></a>
+<ul class="sub-menu"><li><a href="#emitidas">Facturas Emitidas</a></li><li><a href="#porfacturar">Bodegas por facturar</a></li></ul>
+</li>
+<li><a href="#pagos"><i style="font-family:serif">&#xf0a2;</i><span>Pagos</span></a></li>
+<li><a href="#alertas"><i style="font-family:serif">&#xf0f3;</i><span>Alertas</span></a>
+<ul class="sub-menu"><li><a href="#nueva">Nueva Alerta</a></li><li><a href="#lista">Lista de Alertas</a></li></ul>
+</li>
+<li><a href="#info"><i style="font-family:serif">&#xf05a;</i><span>Info</span></a>
+<ul class="sub-menu"><li><a href="#micasillero">Tu Casillero</a></li><li><a href="#tusdatos">Tus Datos</a></li><li><a href="#actualizar">Actualizar Datos</a></li></ul>
+</li>
+</ul>
+</div>
+<div id="pcont" class="container-fluid">
+<div class="page-head">
+<p><span style="font-size:22px">Hola&nbsp;<span style="color:var(--muted);font-weight:600">Cliente VB TRAVEL</span>, Bienvenido a <strong>VB TRAVEL GLOBAL INC.</strong></span></p>
+<p><span style="font-size:22px">Tu número de casillero es <strong>VBT2226063.</strong></span></p>
+<p>&nbsp;</p>
+<p><span style="font-size:18px"><strong>CONDICIONES DE ENVÍO (IMPORTANTE)</strong></span></p>
+<p>-<strong>MÍNIMO DE ENVÍO (CHINA)</strong> : 0,1 CBM MARÍTIMO Y 12KG AÉREO (SI EL VOLUMEN ES MENOR, IGUAL SE COBRARÁ EL MÍNIMO)<br />
+-<strong>MÍNIMO DE ENVÍO (USA)</strong>: 1 FT3 MARÍTIMO Y 5 LB AÉREO.<br />
+-NO ENVIAMOS MATERIAL TÁCTICO, DRONES, EQUIPOS DE MINADO, TELÉFONOS, LAPTOPS (ANTES CUALQUIER DUDA CONSULTAR A TU AGENTE ANTES DE ENVIAR)<br />
+ALGUNAS MERCANCÍAS NO PUEDEN ENVIARSE O MANEJAN TARIFAS DISTINTAS; POR ESO ES INDISPENSABLE LA CONFIRMACIÓN PREVIA.</p>
+<p><span style="font-size:16px">Algunas mercancías no pueden enviarse o manejan tarifas distintas; por eso es indispensable la confirmación previa.</span></p>
+<p>&nbsp;</p>
+<hr />
+<p><strong><u><span style="font-size:20px">Para envíos desde EEUU</span></u><br /><span style="color:var(--muted);font-size:18px">Dirección Bodega Miami: </span></strong><strong>(FREE OF TAX AMAZON + Reempaque Gratuito)</strong><br /><span style="font-size:22px"><span style="font-size:18px">2020 NW 129th Ave Suite 202<br />Miami FL 33182</span></span></p>
+<p><span style="font-size:18px">+1 (786) 897-2653</span></p>
+<p><span style="font-size:18px"><strong>Importante</strong><br />Colocar en apellido VB TRAVEL seguido de su número de casillero</span></p>
+<hr />
+<p><u><span style="font-size:18px"><strong><span style="color:var(--muted)">Para envíos desde CHINA</span></strong></span></u></p>
+<p><span style="font-size:18px">Solo los envíos desde China deben descargar la etiqueta <strong><span class="marker">"Shipping Marks"</span></strong> y enviarla a sus proveedores.</span><br /><br />
+<strong>ALMACENES CHINA</strong></p>
+<p>Selecciona la dirección según tu tipo de envío</p>
+<p><strong>DIRECCIÓN 1 - MARÍTIMO CHINA - VENEZUELA</strong><br />
+Para cargas marítimas regulares con destino Venezuela.<br />
+Dirección: 浙江省义乌市福田街道宗宅5区14栋6单元5号（222号）收<br />
+导航（乐运贸易公司）<br />
+TEL: 13968915985</p>
+<p><strong>DIRECCIÓN 2 - AÉREO Y MARÍTIMO INTERNACIONAL</strong><br />
+Para envíos desde China hacia Venezuela y Estados Unidos.<br />
+公司名: 广州市汇胜国际货运代理有限公司<br />
+地址: 广州市白云区嘉禾街望岗百花岭北街2号同星社区二期A112<br />
+联系人: 刘生<br />
+TEL: 13559765299<br />
+请查收</p>
+<p><strong>DIRECCIÓN 3 - MARÍTIMO EMPRESARIAL CHINA - VENEZUELA</strong><br />
+Importación formal para empresas<br />
+仓库地址: 浙江省义乌市福田宗宅5区14栋6单元1-8号<br />
+Código: 2-W2279S<br />
+联系人: 刘生<br />
+TEL: 19858987879</p>
+<p>Importa • Documenta • Registra • Controla tu inventario<br />
+VB TRAVEL GLOBAL INC<br />
+Tu operación logística, centralizada en un solo lugar.</p>
+</div>
+<div class="block-flat">
+<div class="content text-center">
+<p><img src="https://via.placeholder.com/200x80?text=VB+TRAVEL+Marks" alt="Shipping Marks" /></p>
+<p><a class="btn-gold" href="#" onclick="funaviso('Etiqueta MARÍTIMA generada (demo)')"><i style="font-family:serif">&#xf0c6;</i> Descargar Etiqueta Marítima</a></p>
+<p><a class="btn-outline" href="#" onclick="funaviso('Etiqueta AÉREA generada (demo)')"><i style="font-family:serif">&#xf072;</i> Descargar Etiqueta Aérea</a></p>
+<p><a class="btn-outline" href="#" onclick="funaviso('Etiqueta EMPRESARIAL generada (demo)')"><i style="font-family:serif">&#xf02d;</i> Descargar Etiqueta Empresario</a></p>
+<p>&nbsp;</p>
+</div>
+</div>
+</div>
+<div id="processingOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;flex-direction:column">
+<div style="font-size:2rem">⏳</div><div style="color:#fff;margin-top:8px;font-weight:600">Procesando...</div>
+</div>
+<div id="modalChangeShipping" class="modal" role="dialog">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header" style="background:var(--navy)">
+<button id="closeaddimages" class="close">×</button>
+<h3 class="modal-title" id="title_change_shippingtype" style="text-align:center">Tipo de Envío</h3>
+</div>
+<div class="modal-body">
+<div class="alert alert-danger rounded" id="alertfeed_shippingtype" style="display:none"><button type="button" class="close">×</button><strong>Advertencia:</strong> <p id="failmessage_shippingtype"></p></div>
+<div class="alert alert-success rounded" id="successfeed_shippingtype" style="display:none"><button type="button" class="close">×</button><strong>Éxito!</strong> <p id="successmessage_shippingtype"></p></div>
+<div class="form-group"><label class="control-label">Tipo de Envío</label><br>
+<select id="change_shippingtype"><option value="Aéreo">Aéreo</option><option value="Marítimo">Marítimo</option><option value="Terrestre">Terrestre</option><option value="Ninguna">Ninguna</option></select>
+</div>
+<div id="notchange_shippingtype" class="form-group"><h3>No es posible cambiar el tipo de envío en un recibo procesado</h3></div>
+<p class="spacer" id="ptermcond_shippingtype">Al enviar las instrucciones del tipo de envío, declara que acepta los <a id="termcond" onclick="openTerminos()">Términos y Condiciones</a></p>
+</div>
+<div class="modal-footer">
+<div class="text-right">
+<button type="button" class="btn btn-default" onclick="closeModal('modalChangeShipping')">Cerrar</button>
+<button onclick="doChangeShipping()" class="btn-gold">Enviar Instrucción</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="modaltermcond" class="modal" role="dialog">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header" style="background:var(--navy)">
+<button id="closemodalterminos" class="close">×</button>
+<center><h3>Términos y Condiciones</h3></center>
+</div>
+<div class="modal-body">
+<div class="text-center"><div class="alert alert-info"><h4 id="termcond_shippingtypeW">https://drive.google.com/file/d/1vaTxi3i_cJfF4FE1bvVOpZtFLH2yhzIZ/view</h4></div></div>
+<div class="modal-footer"><div class="text-center"><button type="button" class="btn btn-default" onclick="closeModal('modaltermcond')">Cerrar</button></div></div>
+</div>
+</div>
+</div>
+</div>
+<div id="changelang" class="modal" role="dialog">
+<div class="modal-dialog modal-md">
+<div class="modal-content">
+<div class="modal-header" style="background:var(--navy)">
+<button id="closechangelang" class="close">×</button>
+<h2 class="modal-title" style="text-align:center">Cambiar Idioma</h2>
+</div>
+<div class="modal-body"><div class="text-center"><div class="form-group">
+<select id="selectlang"><option value="es">Español</option><option value="en">Inglés</option><option value="fr">Francés</option><option value="it">Italiano</option><option value="pt">Portugués</option><option value="zh-CN">Chino</option><option value="tr">Turco</option>
+</select></div></div></div>
+<div class="modal-footer"><div class="text-center"><button type="button" class="btn btn-default" onclick="closeModal('changelang')">Cancelar</button></div></div>
+</div>
+</div>
+</div>
+<div id="mod-error" class="modal" role="dialog">
+<div class="modal-dialog modal-sm">
+<div class="modal-content">
+<div class="modal-header"><button type="button" class="close">×</button></div>
+<div class="modal-body"><div class="text-center"><div class="i-circle danger"><i style="font-family:serif">&#xf00d;</i></div><p id="alertmessage" style="font-size:14px"></p></div></div>
+<div class="modal-footer"><div class="text-center"><button type="button" class="btn btn-default" onclick="closeModal('mod-error')">Seguir</button></div></div>
+</div>
+</div>
+</div>
+<div id="mod-aviso" class="modal" role="dialog">
+<div class="modal-dialog modal-sm">
+<div class="modal-content">
+<div class="modal-header"><button type="button" class="close">×</button></div>
+<div class="modal-body"><div class="text-center"><div class="i-circle"><i style="font-family:serif">&#xf058;</i></div><p id="avisomessage" style="font-size:14px"></p></div></div>
+<div class="modal-footer"><div class="text-center"><button type="button" class="btn btn-default" onclick="closeModal('mod-aviso')">Seguir</button></div></div>
+</div>
+</div>
+</div>
+<div id="mod-extent-session" class="modal fade" role="dialog">
+<div class="modal-dialog modal-m">
+<div class="modal-content">
+<div class="modal-header"><h3>Sin actividad reciente</h3><button type="button" class="close md-close">×</button></div>
+<div class="modal-body"><div class="text-left"><p id="stopwatchModal"></p></div></div>
+<div class="modal-footer">
+<button type="button" class="btn btn-default md-close" onclick="closeModal('mod-extent-session')">Cerrar</button>
+<button type="button" onclick="extentTime()" class="btn btn-primary btn-flat">Extender mi sesión</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+var isMobile=false;
+if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0,4))) { isMobile=true; }
+var totalClockTime=Number(600);
+var showExtentTime=true;
+function formatClockTime(seconds){const h=Math.floor(seconds/3600).toString().padStart(2,'0');const m=Math.floor((seconds%3600)/60).toString().padStart(2,'0');const s=(seconds%60).toString().padStart(2,'0');return h+':'+m+':'+s;}
+function extentTime(){if(document.getElementById('mod-extent-session').classList.contains('show')){document.getElementById('mod-extent-session').classList.remove('show');}totalClockTime=Number(600);}
+document.getElementById('btnSidebar').onclick=function(){document.getElementById('cl-wrapper').classList.toggle('open');};
+document.getElementById('btnSidebarMobile').onclick=function(){document.getElementById('cl-wrapper').classList.toggle('open');};
+document.querySelectorAll('.close').forEach(function(b){b.onclick=function(){var m=b.closest('.modal');if(m)m.classList.remove('show');}});
+function funalert(message){document.getElementById('alertmessage').innerHTML=message;document.getElementById('mod-error').classList.add('show');}
+function funaviso(message){document.getElementById('avisomessage').text(message);document.getElementById('mod-aviso').classList.add('show');}
+function openTerminos(){closeModal('modalChangeShipping');document.getElementById('modaltermcond').classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function doChangeShipping(){var st=document.getElementById('change_shippingtype').value;closeModal('modalChangeShipping');funaviso('Tipo de envío cambiado a: '+st);}
+document.getElementById('selectlang').onchange=function(){var lang=this.value;closeModal('changelang');funaviso('Idioma cambiado a '+lang+'. (demo)');};
+window.onclick=function(event){if(event.target.classList.contains('modal')){event.target.classList.remove('show');}};
+const timer=setInterval(function(){
+if(totalClockTime<=0){clearInterval(timer);document.getElementById('stopwatch').textContent='00:00:00';document.getElementById('mod-extent-session').classList.remove('show');funalert('¡Tiempo agotado!');}
+else{document.getElementById('stopwatch').textContent=formatClockTime(totalClockTime);document.getElementById('stopwatchModal').textContent='Su sesión va a expirar en '+formatClockTime(totalClockTime);totalClockTime--;if(totalClockTime<=180&&showExtentTime){showExtentTime=false;document.getElementById('mod-extent-session').classList.add('show');}}
+},1000);
+</script>
+</body>
+</html>
