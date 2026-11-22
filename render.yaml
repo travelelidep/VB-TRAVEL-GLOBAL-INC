@@ -1,0 +1,14 @@
+﻿services:
+  - type: web
+    name: vb-travel-global
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_WHATSAPP_NUMBER
+        value: "58416111157"
+      - key: NEXT_PUBLIC_EMAIL
+        value: "vbtravelglobal@gmail.com"
