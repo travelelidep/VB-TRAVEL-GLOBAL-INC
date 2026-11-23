@@ -30,7 +30,11 @@ node scripts/automation-tick.mjs   # dispara un tick contra AGENTS_BASE_URL
   (enrutado + ejecución), `memory.ts` (estado), `automation.ts` (cola y alertas).
 - `src/lib/pricing.ts` y `src/lib/documents.ts` — motores de negocio reutilizados por las rutas
   API y por las herramientas de los agentes. **No dupliques esta lógica**: importa desde aquí.
-- `render.yaml` — Blueprint de Render (servicio web + cron).
+- `src/instrumentation.ts` + `src/lib/agents/scheduler.ts` — planificador interno que ejecuta
+  `runAutomationTick()` cada 15 minutos al arrancar el servidor (controlado por
+  `AUTOMATION_SELF_SCHEDULE`).
+- `render.yaml` — Blueprint de Render (servicio web; el cron externo está comentado porque exige
+  plan de pago).
 - `.github/workflows/agents-automation.yml` — cron alternativo y gratuito.
 
 ## Convenciones

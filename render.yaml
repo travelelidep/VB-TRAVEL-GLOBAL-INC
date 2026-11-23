@@ -15,7 +15,7 @@ services:
       - key: NODE_VERSION
         value: "22"
       - key: NEXT_PUBLIC_SITE_URL
-        value: https://vbtravelglobal.com
+        sync: false
       - key: NEXT_PUBLIC_WHATSAPP_NUMBER
         value: "58416111157"
       - key: NEXT_PUBLIC_EMAIL
@@ -27,6 +27,9 @@ services:
         value: https://api.openai.com/v1
       - key: AI_MODEL
         value: gpt-4o-mini
+      # El planificador interno corre cada 15 min sin cron externo.
+      - key: AUTOMATION_SELF_SCHEDULE
+        value: "true"
       - key: CRON_SECRET
         generateValue: true
       # Persistencia opcional del estado de los agentes (Upstash Redis)
@@ -46,24 +49,25 @@ services:
       - key: EMAIL_FROM
         value: sistema@vbtravelglobal.com
 
-  # Bucle autónomo: procesa la cola de tareas de los agentes cada 15 minutos.
-  - type: cron
-    name: vb-agents-automation
-    runtime: node
-    plan: starter
-    region: oregon
-    branch: main
-    schedule: "*/15 * * * *"
-    buildCommand: ""
-    startCommand: node scripts/automation-tick.mjs
-    envVars:
-      - key: AGENTS_BASE_URL
-        fromService:
-          type: web
-          name: vb-travel-global
-          envVarKey: RENDER_EXTERNAL_URL
-      - key: CRON_SECRET
-        fromService:
-          type: web
-          name: vb-travel-global
-          envVarKey: CRON_SECRET
+  # Cron externo (opcional). Requiere plan de pago en Render; el planificador
+  # interno (AUTOMATION_SELF_SCHEDULE) ya cubre el plan free.
+  # - type: cron
+  #   name: vb-agents-automation
+  #   runtime: node
+  #   plan: starter
+  #   region: oregon
+  #   branch: main
+  #   schedule: "*/15 * * * *"
+  #   buildCommand: echo sin-build
+  #   startCommand: node scripts/automation-tick.mjs
+  #   envVars:
+  #     - key: AGENTS_BASE_URL
+  #       fromService:
+  #         type: web
+  #         name: vb-travel-global
+  #         envVarKey: RENDER_EXTERNAL_URL
+  #     - key: CRON_SECRET
+  #       fromService:
+  #         type: web
+  #         name: vb-travel-global
+  #         envVarKey: CRON_SECRET

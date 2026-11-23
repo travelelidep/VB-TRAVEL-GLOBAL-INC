@@ -28,7 +28,8 @@ POST /api/agents/orchestrator
           └── Opera       incidencias y última milla
                  │
                  ▼
-      Cola de tareas (memoria o Redis) ──► /api/automation/tick (cron cada 15 min)
+      Cola de tareas (memoria o Redis) ──► planificador interno cada 15 min
+                                        └─► /api/automation/tick (cron externo opcional)
 ```
 
 - **Orquestador** (`src/lib/agents/orchestrator.ts`): enruta por LLM o por palabras clave y
@@ -90,6 +91,7 @@ El repositorio incluye `render.yaml` (Blueprint) con el servicio web y el cron d
 | --- | --- | --- |
 | `AI_API_KEY` | No | Activa el LLM (OpenAI, Groq, OpenRouter…) |
 | `AI_BASE_URL` / `AI_MODEL` | No | Endpoint y modelo compatibles con OpenAI |
+| `AUTOMATION_SELF_SCHEDULE` | No | `false` desactiva el planificador interno |
 | `CRON_SECRET` | Recomendada | Protege `/api/automation/tick` (se genera sola) |
 | `UPSTASH_REDIS_REST_URL` / `_TOKEN` | No | Persistencia del estado entre deploys |
 | `WHATSAPP_VERIFY_TOKEN` | Sí para WhatsApp | Verificación del webhook de Meta |
@@ -98,11 +100,14 @@ El repositorio incluye `render.yaml` (Blueprint) con el servicio web y el cron d
 
 Notas de Render:
 
-- El plan free del servicio web se duerme por inactividad; el cron de GitHub Actions o de
-  Render lo despierta periódicamente.
-- Los **Cron Jobs** de Render requieren plan de pago (Starter). Alternativa gratuita incluida:
-  el workflow `.github/workflows/agents-automation.yml`, que se activa al definir los secretos
-  `AGENTS_BASE_URL` y `CRON_SECRET` en GitHub.
+- La automatización no necesita cron externo: `src/instrumentation.ts` arranca un planificador
+  interno que procesa la cola cada 15 minutos dentro del propio servidor.
+- Los **Cron Jobs** de Render requieren plan de pago (Starter); por eso vienen comentados en
+  `render.yaml`. Si prefieres un disparador externo y gratuito, usa el workflow
+  `.github/workflows/agents-automation.yml` definiendo los secretos `AGENTS_BASE_URL` y
+  `CRON_SECRET` en GitHub.
+- El plan free de Render duerme el servicio tras 15 minutos sin tráfico; el planificador se
+  reanuda al despertar.
 - Sin Redis el estado se pierde en cada deploy o reinicio. Con Upstash se conserva.
 
 ## WhatsApp (Meta)
