@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VB TRAVEL GLOBAL INC — Sitio web + célula de agentes IA
 
-## Getting Started
+Sitio Next.js 16 del casillero China → Venezuela, con una célula de nueve agentes de IA que
+coticéan, gestionan documentos, siguen la aduana, rastrean envíos, atienden clientes y ejecutan
+tareas de seguimiento de forma autónoma.
 
-First, run the development server:
+## Arquitectura
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Cliente (web / WhatsApp / webhooks)
+        │
+        ▼
+POST /api/agents/orchestrator
+        │
+        ▼
+   ┌─────────────┐   sin API key
+   │ Orquestador │──────────────► motor de reglas (siempre disponible)
+   │  (supervisor)│   con API key
+   └──────┬──────┘──────────────► LLM compatible con OpenAI
+          │
+          ├── Coti        cotizaciones aéreas y marítimas
+          ├── Docu        checklist documental internacional + Venezuela
+          ├── Aduanero    estados del DUA y siguientes pasos
+          ├── Rastrea     estado de guías
+          ├── Sofía       atención al cliente
+          ├── Valeria     seguimiento comercial
+          ├── Marca       contenido y marketing
+          └── Opera       incidencias y última milla
+                 │
+                 ▼
+      Cola de tareas (memoria o Redis) ──► /api/automation/tick (cron cada 15 min)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Orquestador** (`src/lib/agents/orchestrator.ts`): enruta por LLM o por palabras clave y
+  ejecuta al agente con datos reales del sistema.
+- **Herramientas** (`src/lib/agents/tools.ts`): cotizar, documentos, rastrear, crear lead,
+  crear tarea y resumen operativo. Son deterministas: nunca inventan precios.
+- **Memoria** (`src/lib/agents/memory.ts`): tareas, leads, envíos, eventos y métricas.
+  Usa memoria del proceso o Upstash Redis si configuras las variables.
+- **Automatización** (`src/lib/agents/automation.ts`): procesa tareas vencidas, detecta envíos
+  estancados y leads fríos, y genera un resumen diario.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Endpoints
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/health` | Health check para Render (estado, agentes, integraciones) |
+| GET | `/api/agents` | Agentes, métricas, tareas, eventos y leads |
+| POST | `/api/agents/orchestrator` | `{ message, agentId?, canal?, cliente?, contexto? }` |
+| POST | `/api/agents/cotizador` | Cotización (acepta el payload del API y el del wizard) |
+| POST | `/api/agents/documentos` | Checklist documental |
+| POST | `/api/leads/casillero` | Alta de casillero + tareas de bienvenida |
+| POST | `/api/automation/tick` | Procesa la cola (requiere `CRON_SECRET` si está definido) |
+| POST | `/api/webhooks/carrier` | Eventos del transportista → rastreo + tarea de aviso |
+| POST | `/api/webhooks/aduana` | Estados del DUA → tarea del agente aduanal |
+| POST | `/api/webhooks/whatsapp` | Mensajes de WhatsApp → orquestador → respuesta |
+| POST | `/api/webhooks/wings` | Reservas WINGS → lead + tareas de post-venta |
 
-## Learn More
+Panel de operación: **`/agentes`** (métricas, cola de tareas, actividad y consola de chat).
 
-To learn more about Next.js, take a look at the following resources:
+## Desarrollo local
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+cp .env.example .env.local   # opcional
+npm run dev                  # http://localhost:3000
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Sin `AI_API_KEY` todo funciona en modo reglas: las cotizaciones, documentos, rastreo y
+respuestas son deterministas. Al añadir una clave, los agentes redactan con LLM pero siguen
+usando las herramientas para los datos.
 
-## Deploy on Vercel
+```bash
+npx tsc --noEmit             # tipos
+npm run build                # build de producción
+curl -X POST localhost:3000/api/automation/tick
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Despliegue en Render
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El repositorio incluye `render.yaml` (Blueprint) con el servicio web y el cron de agentes.
+
+1. En Render: **New → Blueprint** y selecciona este repositorio.
+2. Render crea:
+   - `vb-travel-global` (web, health check en `/api/health`, deploy automático desde `main`).
+   - `vb-agents-automation` (cron cada 15 minutos que llama a `/api/automation/tick`).
+3. Completa las variables marcadas como secretas (`sync: false`):
+
+| Variable | Obligatoria | Uso |
+| --- | --- | --- |
+| `AI_API_KEY` | No | Activa el LLM (OpenAI, Groq, OpenRouter…) |
+| `AI_BASE_URL` / `AI_MODEL` | No | Endpoint y modelo compatibles con OpenAI |
+| `CRON_SECRET` | Recomendada | Protege `/api/automation/tick` (se genera sola) |
+| `UPSTASH_REDIS_REST_URL` / `_TOKEN` | No | Persistencia del estado entre deploys |
+| `WHATSAPP_VERIFY_TOKEN` | Sí para WhatsApp | Verificación del webhook de Meta |
+| `WHATSAPP_ACCESS_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` | Sí para WhatsApp | Envío de respuestas |
+| `RESEND_API_KEY` / `EMAIL_FROM` | No | Notificaciones por email |
+
+Notas de Render:
+
+- El plan free del servicio web se duerme por inactividad; el cron de GitHub Actions o de
+  Render lo despierta periódicamente.
+- Los **Cron Jobs** de Render requieren plan de pago (Starter). Alternativa gratuita incluida:
+  el workflow `.github/workflows/agents-automation.yml`, que se activa al definir los secretos
+  `AGENTS_BASE_URL` y `CRON_SECRET` en GitHub.
+- Sin Redis el estado se pierde en cada deploy o reinicio. Con Upstash se conserva.
+
+## WhatsApp (Meta)
+
+1. Configura el webhook en Meta Developers apuntando a
+   `https://<tu-dominio>/api/webhooks/whatsapp` con el token de verificación.
+2. Suscríbete al campo `messages`.
+3. Define `WHATSAPP_ACCESS_TOKEN` y `WHATSAPP_PHONE_NUMBER_ID` para que el agente responda.
+
+## Webhooks de operación
+
+```bash
+# Evento del transportista
+curl -X POST https://<dominio>/api/webhooks/carrier \
+  -H 'Content-Type: application/json' \
+  -d '{"trackingNumber":"VBG123456","event":"EN_TRANSITO","location":"Puerto Huangpu","carrier":"COSCO"}'
+
+# Estado aduanal
+curl -X POST https://<dominio>/api/webhooks/aduana \
+  -H 'Content-Type: application/json' \
+  -d '{"duaNumber":"DUA-2026-001","trackingNumber":"VBG123456","status":"SELECCION_ROJA"}'
+
+# Tick manual de la automatización
+curl -X POST https://<dominio>/api/automation/tick -H "Authorization: Bearer $CRON_SECRET"
+```

@@ -1,0 +1,29 @@
+name: Agentes IA - tick automático
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar configuración
+        id: config
+        run: |
+          if [ -z "${{ secrets.AGENTS_BASE_URL }}" ]; then
+            echo "AGENTS_BASE_URL no configurado; se omite el tick."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ejecutar tick de agentes
+        if: steps.config.outputs.skip == 'false'
+        run: |
+          curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"origen":"github-actions"}' \
+            "${{ secrets.AGENTS_BASE_URL }}/api/automation/tick"

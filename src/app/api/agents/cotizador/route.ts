@@ -1,171 +1,140 @@
-﻿import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { NextRequest, NextResponse } from "next/server";
+import { addEvent, addLeadNote, createTask, hydrate, upsertLead } from "@/lib/agents/memory";
+import { formatUSD, generateQuote, quoteSchema } from "@/lib/pricing";
 
-const quoteSchema = z.object({
-  nombre: z.string().min(2),
-  email: z.string().email(),
-  telefono: z.string().min(10),
-  empresa: z.string().optional(),
-  tipoCarga: z.enum(["paqueteria", "carga_suelta", "paletizada", "contenedor"]),
-  modalidad: z.enum(["aerea", "maritima"]),
-  origen: z.string(),
-  destino: z.string().min(2),
-  peso: z.number().positive(),
-  dimensiones: z.string().optional(),
-  valor: z.number().positive(),
-  contenido: z.string().min(3),
-  notas: z.string().optional(),
-});
+export const dynamic = "force-dynamic";
 
-type AirRate = { base: number; min: number; fuel: number; security: number };
-type SeaRate = { base: number; min: number; fuel: number; thc: number; docs: number };
-type Rate = AirRate | SeaRate;
-
-// Tarifas basadas en mercado real Alibaba Logistics + flete Guangzhou→Venezuela 2024
-const RATES: Record<"aerea" | "maritima", Rate> = {
-  aerea: { base: 12.5, min: 50, fuel: 0.18, security: 0.05 },
-  maritima: { base: 4.2, min: 250, fuel: 0.08, thc: 0.12, docs: 120 },
-};
-
-const DESTINATIONS: Record<string, { factor: number; daysAir: number; daysSea: number }> = {
-  caracas: { factor: 1.0, daysAir: 2, daysSea: 28 },
-  valencia: { factor: 1.05, daysAir: 2, daysSea: 30 },
-  maracaibo: { factor: 1.15, daysAir: 3, daysSea: 32 },
-  barquisimeto: { factor: 1.1, daysAir: 3, daysSea: 31 },
-  "puerto ordaz": { factor: 1.25, daysAir: 3, daysSea: 35 },
-  maturin: { factor: 1.2, daysAir: 3, daysSea: 33 },
-  cumana: { factor: 1.2, daysAir: 3, daysSea: 33 },
-  "san cristobal": { factor: 1.18, daysAir: 3, daysSea: 32 },
-  merida: { factor: 1.15, daysAir: 3, daysSea: 32 },
-};
-
-function calculateVolumetricWeight(dims: string, pieces = 1): number {
-  const match = dims.match(/(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)\s*[x×]\s*(\d+(?:\.\d+)?)/i);
-  if (!match) return 0;
-  const [, l, w, h] = match.map(Number);
-  return (l * w * h / 6000) * pieces;
-}
-
-function getAirRateByWeight(weight: number): number {
-  // Tarifas escalonadas por volumen (kg facturable)
-  if (weight <= 10) return 14.50;
-  if (weight <= 50) return 12.80;
-  if (weight <= 100) return 11.20;
-  if (weight <= 300) return 9.80;
-  return 8.50; // +300 kg tarifa corporativa
-}
-
-function getSeaRateByWeight(weight: number): number {
-  // Tarifas LCL escalonadas
-  if (weight <= 200) return 5.20;
-  if (weight <= 500) return 4.50;
-  if (weight <= 1000) return 3.90;
-  if (weight <= 2000) return 3.40;
-  return 3.00; // FCL equivalent
-}
-
-function generateQuote(data: z.infer<typeof quoteSchema>) {
-  const destKey = data.destino.toLowerCase().replace(/[^a-z]/g, "");
-  const dest = DESTINATIONS[destKey] || { factor: 1.2, daysAir: 3, daysSea: 35 };
-  
-  const volWeight = calculateVolumetricWeight(data.dimensiones || "");
-  const chargeableWeight = Math.max(data.peso, volWeight);
-  
-  let breakdown: Record<string, number> = {};
-  let total = 0;
-  
-  if (data.modalidad === "aerea") {
-    const ratePerKg = getAirRateByWeight(chargeableWeight);
-    const freight = chargeableWeight * ratePerKg * dest.factor;
-    const fuel = freight * 0.18; // Fuel surcharge 18%
-    const security = freight * 0.05; // Security charge 5%
-    const handling = 35; // Manejo aeropuerto
-    
-    breakdown.flete = Math.round(freight * 100) / 100;
-    breakdown.combustible = Math.round(fuel * 100) / 100;
-    breakdown.seguridad = Math.round(security * 100) / 100;
-    breakdown.manejo_aeropuerto = handling;
-    
-    total = freight + fuel + security + handling;
-  } else {
-    const ratePerKg = getSeaRateByWeight(chargeableWeight);
-    const freight = chargeableWeight * ratePerKg * dest.factor;
-    const thc = freight * 0.12; // THC origen + destino ~12%
-    const docs = 120; // Documentación BL, CO, certificado origen
-    const handling = data.tipoCarga === "contenedor" ? 350 : data.tipoCarga === "paletizada" ? 120 : 60;
-    
-    breakdown.flete = Math.round(freight * 100) / 100;
-    breakdown.thc = Math.round(thc * 100) / 100;
-    breakdown.documentacion = docs;
-    breakdown.manejo = handling;
-    
-    total = freight + thc + docs + handling;
+function num(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/[^0-9.,-]/g, "").replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : undefined;
   }
-  
-  // Seguro todo riesgo (opcional pero recomendado) - 0.3% valor
-  const insurance = data.valor * 0.003;
-  breakdown.seguro = Math.round(insurance * 100) / 100;
-  total += insurance;
-  
-  // Aduanas Venezuela: IVA 16% + Arancel promedio 10% = ~26% sobre CIF
-  // CIF ≈ valor + flete + seguro
-  const cif = data.valor + (data.modalidad === "aerea" ? breakdown.flete + breakdown.combustible + breakdown.seguridad : breakdown.flete + breakdown.thc) + insurance;
-  const customs = cif * 0.26;
-  breakdown.aduanas_iva_aranceles = Math.round(customs * 100) / 100;
-  total += customs;
-  
-  // Entrega última milla Venezuela (incluida en tarifa base pero desglosada)
-  const lastMile = data.modalidad === "aerea" ? 40 : 60;
-  breakdown.entrega_ultima_milla = lastMile;
-  total += lastMile;
-  
-  // Redondeo final
-  const finalTotal = Math.round(total * 100) / 100;
-  
+  return undefined;
+}
+
+function str(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+/**
+ * Acepta el contrato del API (peso/valor/destino) y también el formulario
+ * del wizard (pesoPorCaja/cajas/valorCarga/destinoFinal).
+ */
+function normalizePayload(body: Record<string, unknown>): Record<string, unknown> {
+  const cajas = num(body.cajas) ?? 1;
+  const paletas = num(body.paletas) ?? 1;
+  const pesoPorCaja = num(body.pesoPorCaja);
+  const pesoPalet = num(body.pesoPalet);
+
+  const peso =
+    num(body.peso) ??
+    (pesoPorCaja ? pesoPorCaja * cajas : undefined) ??
+    (pesoPalet ? pesoPalet * paletas : undefined);
+
+  const largo = str(body.largo);
+  const ancho = str(body.ancho);
+  const alto = str(body.alto);
+  const dimensiones =
+    str(body.dimensiones) ?? (largo && ancho && alto ? `${largo}x${ancho}x${alto}` : undefined);
+
   return {
-    breakdown,
-    total: finalTotal,
-    chargeableWeight: Math.round(chargeableWeight * 100) / 100,
-    volumetricWeight: Math.round(volWeight * 100) / 100,
-    transitDays: data.modalidad === "aerea" ? dest.daysAir : dest.daysSea,
-    modality: data.modalidad,
-    route: `Guangzhou → ${data.destino}`,
-    incoterm: "DDP Puerta a Puerta",
-    validity: "7 días",
-    insuranceIncluded: true,
-    customsIncluded: true,
-    ratePerKg: data.modalidad === "aerea" ? getAirRateByWeight(chargeableWeight) : getSeaRateByWeight(chargeableWeight),
-    destFactor: dest.factor,
+    nombre: str(body.nombre) ?? "Cliente web",
+    email: str(body.email) ?? "cliente@vbtravelglobal.com",
+    telefono: str(body.telefono) ?? "0000000000",
+    empresa: str(body.empresa),
+    tipoCarga: str(body.tipoCarga) ?? "paqueteria",
+    modalidad: str(body.modalidad) ?? "aerea",
+    origen: str(body.origen) ?? str(body.ubicacionOrigen) ?? "Guangzhou, China",
+    destino: str(body.destino) ?? str(body.destinoFinal),
+    peso,
+    dimensiones,
+    valor: num(body.valor) ?? num(body.valorCarga),
+    contenido: str(body.contenido),
+    notas: str(body.notas),
   };
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const parsed = quoteSchema.safeParse(body);
-    
+    await hydrate();
+    const body = (await req.json()) as Record<string, unknown>;
+    const parsed = quoteSchema.safeParse(normalizePayload(body));
+
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Datos inválidos", details: parsed.error.flatten() },
+        {
+          success: false,
+          error: "Datos inválidos",
+          detalles: parsed.error.flatten(),
+          camposFaltantes: [...new Set(parsed.error.issues.map((i) => i.path.join(".")))],
+        },
         { status: 400 }
       );
     }
-    
-    const quote = generateQuote(parsed.data);
-    
-    await new Promise(r => setTimeout(r, 500));
-    
+
+    const data = parsed.data;
+    const quote = generateQuote(data);
+    const quoteId = `VBG-Q-${Date.now().toString(36).toUpperCase()}`;
+
+    const lead = upsertLead({
+      nombre: data.nombre,
+      email: data.email,
+      telefono: data.telefono,
+      ciudad: data.destino,
+      origen: "web-cotizador",
+      interes: `${data.modalidad} · ${data.tipoCarga} · ${data.peso} kg`,
+      agentId: "cotizador",
+      etapa: "cotizado",
+    });
+
+    addLeadNote(
+      lead.id,
+      `Cotización ${quoteId}: ${formatUSD(quote.total)} (${data.modalidad}, ${quote.chargeableWeight} kg facturables).`
+    );
+
+    const seguimiento = createTask({
+      agentId: "ventas",
+      tipo: "seguimiento_cotizacion",
+      titulo: `Seguimiento de cotización ${quoteId} — ${data.nombre}`,
+      payload: { ...data, quoteId, total: quote.total },
+      prioridad: "alta",
+      delayMinutes: 24 * 60,
+    });
+
+    const documental = createTask({
+      agentId: "documentos",
+      tipo: "checklist_documental",
+      titulo: `Preparar checklist documental de ${quoteId}`,
+      payload: { ...data, quoteId },
+      prioridad: "media",
+      delayMinutes: 60,
+    });
+
+    addEvent({
+      agentId: "cotizador",
+      tipo: "cotizacion_generada",
+      mensaje: `${quoteId}: ${formatUSD(quote.total)} para ${data.nombre} (${data.destino})`,
+      nivel: "exito",
+      meta: { quoteId, total: quote.total, modalidad: data.modalidad },
+    });
+
     return NextResponse.json({
       success: true,
+      quoteId,
       quote,
-      quoteId: `VBG-Q-${Date.now().toString(36).toUpperCase()}`,
+      resumen: `${quote.modality === "aerea" ? "Aéreo" : "Marítimo"} a ${data.destino}: ${formatUSD(quote.total)} USD (${quote.transitDays} días de tránsito).`,
+      agent: "cotizador",
+      agentes: {
+        seguimiento: { id: seguimiento.id, programado: seguimiento.dueAt },
+        documental: { id: documental.id, programado: documental.dueAt },
+      },
       timestamp: new Date().toISOString(),
-      agent: "vb-cotizador-ia-v1",
     });
   } catch (error) {
-    console.error("Cotizador error:", error);
+    console.error("[cotizador] Error:", error);
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      { success: false, error: "Error interno del servidor" },
       { status: 500 }
     );
   }
