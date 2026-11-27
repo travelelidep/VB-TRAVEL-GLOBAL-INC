@@ -71,3 +71,21 @@ node scripts/automation-tick.mjs   # dispara un tick contra AGENTS_BASE_URL
   compuestos ("Puerto Ordaz", "San Cristóbal") sin acentos.
 - El push a GitHub está bloqueado (403): el token de la sesión es de solo lectura.
   Los cambios deben subirse desde una cuenta con permiso de escritura.
+
+## Despliegue en Render (estado 2026-11-27)
+
+- Servicio web `vb-travel-global` (`srv-dc1p37afngtc7388ru4g`), plan free, Oregon:
+  https://vb-travel-global.onrender.com · build `npm install && npm run build` · start `npm start`
+  · health check `/api/health`.
+- **Auto-deploy**: Render no tiene la GitHub App instalada, así que el auto-deploy nativo no
+  dispara. Lo resuelve `.github/workflows/deploy-render.yml`, que en cada push a `main` llama a
+  `POST /v1/services/{id}/deploys` con los secrets `RENDER_API_KEY` y `RENDER_SERVICE_ID`.
+- `.github/workflows/agents-automation.yml` corre cada 15 min contra `/api/automation/tick`
+  (secrets `AGENTS_BASE_URL` y `CRON_SECRET`); también mantiene despierto el plan free.
+- Servicio duplicado `vb-travel-global-site` (`srv-dc2s1m0m7kps73epbl0g`): HTML estático viejo
+  del repo `travelelidep/vb-travel-global`. Pendiente de suspender o borrar.
+- Variables presentes: `AI_BASE_URL`, `AI_MODEL`, `AUTOMATION_SELF_SCHEDULE`, `CRON_SECRET`,
+  `EMAIL_FROM`, `NEXT_PUBLIC_*`, `NODE_VERSION`, `WHATSAPP_VERIFY_TOKEN`.
+  Faltan: `AI_API_KEY` (sin LLM), `UPSTASH_REDIS_*` (estado en memoria), `WHATSAPP_ACCESS_TOKEN`
+  + `WHATSAPP_PHONE_NUMBER_ID` (respuestas simuladas), `RESEND_API_KEY` (sin correos).
+- Verificación en producción: 51/51 pruebas de `/tmp/verify_live.py` contra la URL pública.
