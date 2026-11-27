@@ -33,6 +33,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             <Link href="#servicios" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Servicios</Link>
             <Link href="#como-funciona" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Cómo Funciona</Link>
+            <Link href="#productos" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Productos</Link>
             <Link href="#precios" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Tarifas</Link>
             <Link href="#faq" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Preguntas</Link>
             <Link href="/agentes" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Agentes IA</Link>
@@ -61,6 +62,7 @@ export default function Navbar() {
             <div className="flex flex-col space-y-3">
               <Link href="#servicios" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Servicios</Link>
               <Link href="#como-funciona" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Cómo Funciona</Link>
+              <Link href="#productos" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Productos</Link>
               <Link href="#precios" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Tarifas</Link>
               <Link href="#faq" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Preguntas Frecuentes</Link>
               <Link href="/agentes" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Agentes IA</Link>
