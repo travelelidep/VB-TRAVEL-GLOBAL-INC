@@ -83,9 +83,23 @@ node scripts/automation-tick.mjs   # dispara un tick contra AGENTS_BASE_URL
 - `.github/workflows/agents-automation.yml` corre cada 15 min contra `/api/automation/tick`
   (secrets `AGENTS_BASE_URL` y `CRON_SECRET`); también mantiene despierto el plan free.
 - Servicio duplicado `vb-travel-global-site` (`srv-dc2s1m0m7kps73epbl0g`): HTML estático viejo
-  del repo `travelelidep/vb-travel-global`. Pendiente de suspender o borrar.
+  del repo `travelelidep/vb-travel-global`. Suspendido (su URL responde 503).
 - Variables presentes: `AI_BASE_URL`, `AI_MODEL`, `AUTOMATION_SELF_SCHEDULE`, `CRON_SECRET`,
   `EMAIL_FROM`, `NEXT_PUBLIC_*`, `NODE_VERSION`, `WHATSAPP_VERIFY_TOKEN`.
   Faltan: `AI_API_KEY` (sin LLM), `UPSTASH_REDIS_*` (estado en memoria), `WHATSAPP_ACCESS_TOKEN`
   + `WHATSAPP_PHONE_NUMBER_ID` (respuestas simuladas), `RESEND_API_KEY` (sin correos).
 - Verificación en producción: 51/51 pruebas de `/tmp/verify_live.py` contra la URL pública.
+
+## Catálogo de productos
+
+- `src/components/Productos.tsx` → sección `#productos` en la home (buscador + filtros).
+- `src/lib/products/` → `tipos.ts`, `catalogo.ts` (12 productos de referencia, precios FOB) y
+  `fuente.ts` (búsqueda local o remota).
+- `GET /api/products?q=&categoria=&limit=` responde `{productos, fuente, total, categorias}`.
+  Con `PRODUCTOS_API_URL` (+ `PRODUCTOS_API_KEY`) consulta la fuente remota y cae al catálogo
+  local si falla o tarda más de 8 s.
+- Contrato con el cotizador: el botón "Cotizar este producto" escribe
+  `localStorage.vb_selected_product` **y** emite `window.dispatchEvent(new CustomEvent("vb:producto"))`;
+  `CotizadorWizard` escucha ambos. `pesoPorCaja` debe ir sin unidad (el campo es `type=number`).
+- `BuscadorProductos.tsx` y `ChatWidget.tsx` siguen sin montar (código muerto; el chat tiene
+  contenido del negocio anterior de vuelos).
