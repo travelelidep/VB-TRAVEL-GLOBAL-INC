@@ -1,6 +1,5 @@
 ﻿"use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 interface CotizacionData {
   tipoCarga: "paqueteria" | "carga_suelta" | "paletizada" | "contenedor";
@@ -64,14 +63,16 @@ export default function CotizadorWizard() {
   const [data, setData] = useState<CotizacionData>(initialData);
   const [submitted, setSubmitted] = useState(false);
   const [productPrefilled, setProductPrefilled] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    const stored = localStorage.getItem("vb_selected_product");
-    if (stored && !productPrefilled) {
+    // Diferido: el prellenado desde el buscador no debe bloquear el primer render.
+    const timer = setTimeout(() => {
+      const stored = localStorage.getItem("vb_selected_product");
+      if (!stored || productPrefilled) return;
+
       try {
         const product = JSON.parse(stored);
-        setData(prev => ({
+        setData((prev) => ({
           ...prev,
           valorCarga: product.valorCarga || "",
           contenido: product.contenido || "",
@@ -84,11 +85,16 @@ export default function CotizadorWizard() {
         }));
         setProductPrefilled(true);
         localStorage.removeItem("vb_selected_product");
-        setTimeout(() => alert("Producto cargado automáticamente del buscador. Revisa los datos y continúa."), 500);
+        setTimeout(
+          () => alert("Producto cargado automáticamente del buscador. Revisa los datos y continúa."),
+          500
+        );
       } catch (e) {
         console.error("Error parsing product:", e);
       }
-    }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [productPrefilled]);
 
   const updateData = (field: keyof CotizacionData, value: string | number) => {
@@ -215,7 +221,7 @@ export default function CotizadorWizard() {
                       <button
                         key={opt.value}
                         type="button"
-                        onClick={() => updateData("tipoCarga", opt.value as any)}
+                        onClick={() => updateData("tipoCarga", opt.value)}
                         className={`p-4 rounded-xl border-2 text-left transition-all ${
                           data.tipoCarga === opt.value
                             ? "border-orange-500 bg-orange-50"
@@ -238,7 +244,7 @@ export default function CotizadorWizard() {
                       <button
                         key={opt.value}
                         type="button"
-                        onClick={() => updateData("modalidad", opt.value as any)}
+                        onClick={() => updateData("modalidad", opt.value)}
                         className={`p-4 rounded-xl border-2 text-left transition-all ${
                           data.modalidad === opt.value
                             ? "border-orange-500 bg-orange-50"
@@ -266,7 +272,7 @@ export default function CotizadorWizard() {
                         <button
                           key={tc}
                           type="button"
-                          onClick={() => updateData("tipoContenedor", tc as any)}
+                          onClick={() => updateData("tipoContenedor", tc)}
                           className={`p-6 rounded-xl border-2 text-center transition-all ${
                             data.tipoContenedor === tc
                               ? "border-orange-500 bg-orange-50"

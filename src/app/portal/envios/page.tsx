@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
 interface Shipment {
@@ -76,7 +76,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function EnviosPage() {
-  const [shipments, setShipments] = useState<Shipment[]>(mockShipments);
+  const [shipments] = useState<Shipment[]>(mockShipments);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
 

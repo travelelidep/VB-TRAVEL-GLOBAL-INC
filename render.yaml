@@ -1,14 +1,73 @@
-﻿services:
+services:
   - type: web
     name: vb-travel-global
-    env: node
+    runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    region: oregon
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /api/health
+    buildCommand: npm ci && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
       - key: NEXT_PUBLIC_WHATSAPP_NUMBER
         value: "58416111157"
       - key: NEXT_PUBLIC_EMAIL
         value: "vbtravelglobal@gmail.com"
+      # --- Célula de agentes IA ---
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: AI_MODEL
+        value: gpt-4o-mini
+      # El planificador interno corre cada 15 min sin cron externo.
+      - key: AUTOMATION_SELF_SCHEDULE
+        value: "true"
+      - key: CRON_SECRET
+        generateValue: true
+      # Persistencia opcional del estado de los agentes (Upstash Redis)
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      # Integraciones
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: WHATSAPP_ACCESS_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: sistema@vbtravelglobal.com
+
+  # Cron externo (opcional). Requiere plan de pago en Render; el planificador
+  # interno (AUTOMATION_SELF_SCHEDULE) ya cubre el plan free.
+  # - type: cron
+  #   name: vb-agents-automation
+  #   runtime: node
+  #   plan: starter
+  #   region: oregon
+  #   branch: main
+  #   schedule: "*/15 * * * *"
+  #   buildCommand: echo sin-build
+  #   startCommand: node scripts/automation-tick.mjs
+  #   envVars:
+  #     - key: AGENTS_BASE_URL
+  #       fromService:
+  #         type: web
+  #         name: vb-travel-global
+  #         envVarKey: RENDER_EXTERNAL_URL
+  #     - key: CRON_SECRET
+  #       fromService:
+  #         type: web
+  #         name: vb-travel-global
+  #         envVarKey: CRON_SECRET

@@ -31,6 +31,7 @@ export default function Hero() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [codigoCasillero, setCodigoCasillero] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -39,8 +40,25 @@ export default function Hero() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
+    let codigo = "";
+    try {
+      const res = await fetch("/api/leads/casillero", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.ok && data.codigo) {
+        codigo = data.codigo;
+        setCodigoCasillero(data.codigo);
+      }
+    } catch (error) {
+      console.error("Error registrando casillero:", error);
+    }
+
     const whatsappMessage = `📦 NUEVA SOLICITUD DE CASILLERO - VB TRAVEL GLOBAL INC%0A%0A` +
+      (codigo ? `🔑 Código: ${codigo}%0A` : "") +
       `👤 Nombre: ${formData.nombre}%0A` +
       `📧 Email: ${formData.email}%0A` +
       `📱 Tel/WhatsApp: ${formData.telefono}%0A%0A` +
@@ -50,22 +68,17 @@ export default function Hero() {
       `📍 Estado: ${formData.estado}%0A%0A` +
       `✅ Solicitud desde web - Casillero China-Venezuela`;
 
-    try {
-      await new Promise(r => setTimeout(r, 800));
-    } catch (error) {
-      console.error("Error:", error);
-    }
-    
     setLoading(false);
     setSubmitted(true);
-    
+
     window.open(`https://wa.me/58416111157?text=${whatsappMessage}`, "_blank");
-    
-    setTimeout(() => { 
-      setSubmitted(false); 
+
+    setTimeout(() => {
+      setSubmitted(false);
       setStep(1);
+      setCodigoCasillero(null);
       setFormData({ nombre: "", email: "", telefono: "", direccion: "", codigoPostal: "", ciudad: "", estado: "" });
-    }, 5000);
+    }, 8000);
   };
 
   const nextStep = () => {
@@ -93,6 +106,11 @@ export default function Hero() {
               <i className="fas fa-check text-green-400 text-4xl"></i>
             </div>
             <h2 className="text-3xl font-bold text-white mb-3">¡Casillero Solicitado!</h2>
+            {codigoCasillero && (
+              <p className="mb-3 inline-block rounded-xl bg-orange-500/20 px-4 py-2 font-mono text-lg text-orange-300">
+                {codigoCasillero}
+              </p>
+            )}
             <p className="text-slate-300 mb-6">
               Recibirás tus etiquetas de envío y dirección de casillero en Guangzhou
               por WhatsApp en los próximos minutos.

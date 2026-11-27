@@ -1,5 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { getAgentEmail, getAgentById } from "@/lib/agent-assignment";
+import { addEvent, createTask, hydrate, upsertLead } from "@/lib/agents/memory";
 
 interface WingsWebhookPayload {
   pnr: string;
@@ -224,8 +225,53 @@ export async function POST(req: NextRequest) {
       logToCRM(payload, agenteId),
     ]);
 
-    // TODO: Enviar WhatsApp al cliente usando agente.whatsapp
-    // TODO: Programar follow-up post-viaje
+    // Célula de agentes: registrar el cliente y programar el seguimiento
+    await hydrate();
+    const pasajero = payload.passengers?.[0];
+    if (pasajero?.name) {
+      const lead = upsertLead({
+        nombre: pasajero.name,
+        email: pasajero.email,
+        telefono: pasajero.phone,
+        origen: "wings-booking",
+        interes: `Reserva ${payload.pnr} ${payload.bookingData.origin} → ${payload.bookingData.destination}`,
+        agentId: "ventas",
+        etapa: payload.status === "confirmed" ? "cerrado" : "negociacion",
+      });
+
+      createTask({
+        agentId: "ventas",
+        tipo: "seguimiento_reserva",
+        titulo: `Post-venta de reserva ${payload.pnr} (${pasajero.name})`,
+        payload: { pnr: payload.pnr, leadId: lead.id, totalAmount: payload.totalAmount },
+        prioridad: "media",
+        delayMinutes: 24 * 60,
+      });
+    }
+
+    if (payload.status === "confirmed") {
+      createTask({
+        agentId: "operaciones",
+        tipo: "confirmar_servicio",
+        titulo: `Confirmar servicios de la reserva ${payload.pnr}`,
+        payload: {
+          pnr: payload.pnr,
+          origen: payload.bookingData.origin,
+          destino: payload.bookingData.destination,
+          salida: payload.bookingData.departureDate,
+        },
+        prioridad: "alta",
+        delayMinutes: 15,
+      });
+    }
+
+    addEvent({
+      agentId: "ventas",
+      tipo: "reserva_wings",
+      mensaje: `Reserva ${payload.pnr} ${payload.status} (${payload.currency} ${payload.totalAmount})`,
+      nivel: payload.status === "confirmed" ? "exito" : "info",
+      meta: { pnr: payload.pnr, agente: agenteId },
+    });
 
     return NextResponse.json({
       ok: true,

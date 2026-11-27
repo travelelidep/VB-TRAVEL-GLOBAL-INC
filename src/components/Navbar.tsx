@@ -35,6 +35,7 @@ export default function Navbar() {
             <Link href="#como-funciona" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Cómo Funciona</Link>
             <Link href="#precios" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Tarifas</Link>
             <Link href="#faq" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Preguntas</Link>
+            <Link href="/agentes" className="text-sm font-medium text-slate-700 hover:text-orange-500 transition">Agentes IA</Link>
             <a
               href="https://wa.me/58416111157?text=Hola%2C%20quiero%20abrir%20mi%20casillero%20en%20China%20con%20VB%20TRAVEL%20GLOBAL"
               target="_blank"
@@ -62,6 +63,7 @@ export default function Navbar() {
               <Link href="#como-funciona" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Cómo Funciona</Link>
               <Link href="#precios" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Tarifas</Link>
               <Link href="#faq" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Preguntas Frecuentes</Link>
+              <Link href="/agentes" onClick={() => setIsOpen(false)} className="px-4 py-2 text-slate-700 hover:bg-slate-50 rounded-lg">Agentes IA</Link>
               <a
                 href="https://wa.me/58416111157?text=Hola%2C%20quiero%20abrir%20mi%20casillero%20en%20China%20con%20VB%20TRAVEL%20GLOBAL"
                 target="_blank"

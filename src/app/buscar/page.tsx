@@ -1,5 +1,5 @@
 ﻿import { redirect } from "next/navigation";
-import { assignAgent, getAgentById } from "@/lib/agent-assignment";
+import { assignAgent } from "@/lib/agent-assignment";
 
 interface SearchParams {
   origen?: string;
@@ -30,7 +30,6 @@ export default async function BuscarPage({
 
   // Asignar agente si no viene en params
   const agenteAsignado = params.agente || assignAgent(params);
-  const agenteInfo = getAgentById(agenteAsignado);
 
   // Construir parámetros para WINGS
   const wingsParams = new URLSearchParams({

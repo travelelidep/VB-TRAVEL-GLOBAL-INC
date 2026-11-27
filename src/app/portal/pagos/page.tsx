@@ -225,7 +225,7 @@ export default function PagosPage() {
             {["all", "pending", "paid", "partial", "overdue"].map(s => (
               <button
                 key={s}
-                onClick={() => setFilterStatus(s as any)}
+                onClick={() => setFilterStatus(s as typeof filterStatus)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition ${
                   filterStatus === s
                     ? "bg-orange-500 text-white"
