@@ -47,6 +47,7 @@ POST /api/agents/orchestrator
 | --- | --- | --- |
 | GET | `/api/health` | Health check para Render (estado, agentes, integraciones) |
 | GET | `/api/products` | Catálogo de productos (`q`, `categoria`, `limit`); usa catálogo local o fuente remota |
+| POST | `/api/asesor` | Asesor de importación: responde con la base de conocimiento (RAG con LLM si hay clave) |
 | GET | `/api/agents` | Agentes, métricas, tareas, eventos y leads |
 | POST | `/api/agents/orchestrator` | `{ message, agentId?, canal?, cliente?, contexto? }` |
 | POST | `/api/agents/cotizador` | Cotización (acepta el payload del API y el del wizard) |
