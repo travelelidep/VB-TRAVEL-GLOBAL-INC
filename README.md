@@ -87,6 +87,9 @@ El repositorio incluye `render.yaml` (Blueprint) con el servicio web y, comentad
    - `vb-travel-global` (web, health check en `/api/health`, deploy automático desde `main`).
    - El planificador interno ya procesa la cola cada 15 minutos; el cron
      `vb-agents-automation` del blueprint está comentado porque exige plan de pago.
+3. Cada push a `main` dispara el workflow `deploy-render.yml`, que llama al API de Render
+   (secrets `RENDER_API_KEY` y `RENDER_SERVICE_ID`). Si instalas la GitHub App de Render,
+   puedes borrar ese workflow y usar el auto-deploy nativo.
 3. Completa las variables marcadas como secretas (`sync: false`):
 
 | Variable | Obligatoria | Uso |
