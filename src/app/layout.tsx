@@ -1,5 +1,6 @@
 ﻿import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import AsesorIA from "@/components/AsesorIA";
 
 export const metadata: Metadata = {
   title: "VB TRAVEL GLOBAL INC | Casillero China → Venezuela | Envíos Puerta a Puerta",
@@ -63,7 +64,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <AsesorIA />
+      </body>
     </html>
   );
 }

@@ -103,3 +103,14 @@ node scripts/automation-tick.mjs   # dispara un tick contra AGENTS_BASE_URL
   `CotizadorWizard` escucha ambos. `pesoPorCaja` debe ir sin unidad (el campo es `type=number`).
 - `BuscadorProductos.tsx` y `ChatWidget.tsx` siguen sin montar (código muerto; el chat tiene
   contenido del negocio anterior de vuelos).
+
+## Asesor de importación (IA)
+
+- `src/components/AsesorIA.tsx` → burbuja flotante montada en `layout.tsx` (todas las páginas).
+- `src/lib/knowledge/base.ts` → 34 entradas (China, Venezuela, Documentos, Transporte, Aduanas,
+  Restricciones) + 29 términos de glosario. Contenido informativo, con aviso de "no es asesoría legal".
+- `src/lib/knowledge/asesor.ts` → recuperación por tokens con alias (plurals, sinónimos), pesos
+  por campo e IDF; responde con la entrada principal y las relacionadas. Si `isLLMEnabled()`,
+  redacta con el LLM usando solo ese contexto (RAG) y cae a la respuesta determinista si falla.
+- `POST /api/asesor` `{mensaje}` → `{respuesta, fuentes[], sugerencias[], origen}`.
+- Al agregar normativa nueva, edita `base.ts`: `claves` manda en la búsqueda y el `titulo` pesa más.
