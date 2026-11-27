@@ -48,17 +48,22 @@ export default function ChatWidget() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const nextId = useRef(2);
 
-  // Inicializar mensaje de bienvenida en useEffect para evitar new Date() en prerender
+  // Bienvenida diferida: la hora solo existe en el cliente.
   useEffect(() => {
-    setMessages([
-      {
-        id: 1,
-        text: botResponses.default,
-        sender: "bot",
-        time: getCurrentTime(),
-      },
-    ]);
+    const timer = setTimeout(() => {
+      setMessages([
+        {
+          id: 1,
+          text: botResponses.default,
+          sender: "bot",
+          time: getCurrentTime(),
+        },
+      ]);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -69,7 +74,7 @@ export default function ChatWidget() {
     if (!text.trim()) return;
 
     const userMsg: Message = {
-      id: Date.now(),
+      id: nextId.current++,
       text,
       sender: "user",
       time: getCurrentTime(),
@@ -80,14 +85,14 @@ export default function ChatWidget() {
 
     setTimeout(() => {
       const botMsg: Message = {
-        id: Date.now() + 1,
+        id: nextId.current++,
         text: getBotResponse(text),
         sender: "bot",
         time: getCurrentTime(),
       };
       setMessages((prev) => [...prev, botMsg]);
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    }, 1200);
   };
 
   return (

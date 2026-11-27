@@ -55,6 +55,7 @@ export function cotizar(input: AnyRecord, cliente?: AnyRecord): ToolResult {
     destino: str(input.destino) ?? str(cliente?.ciudad),
     peso: num(input.peso),
     dimensiones: str(input.dimensiones),
+    piezas: num(input.piezas),
     valor: num(input.valor),
     contenido: str(input.contenido),
     notas: str(input.notas),

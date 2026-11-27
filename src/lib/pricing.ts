@@ -11,6 +11,7 @@ export const quoteSchema = z.object({
   destino: z.string().min(2),
   peso: z.number().positive(),
   dimensiones: z.string().optional(),
+  piezas: z.number().int().positive().optional(),
   valor: z.number().positive(),
   contenido: z.string().min(3),
   notas: z.string().optional(),
@@ -72,11 +73,26 @@ export interface QuoteResult {
   moneda: "USD";
 }
 
-export function generateQuote(data: QuoteInput): QuoteResult {
-  const destKey = data.destino.toLowerCase().replace(/[^a-z]/g, "");
-  const dest = DESTINATIONS[destKey] || { factor: 1.2, daysAir: 3, daysSea: 35 };
+function normalizarCiudad(texto: string): string {
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
 
-  const volWeight = calculateVolumetricWeight(data.dimensiones || "");
+const DESTINATIONS_NORMALIZADAS = new Map(
+  Object.entries(DESTINATIONS).map(([ciudad, datos]) => [normalizarCiudad(ciudad), datos])
+);
+
+export function generateQuote(data: QuoteInput): QuoteResult {
+  const dest = DESTINATIONS_NORMALIZADAS.get(normalizarCiudad(data.destino)) || {
+    factor: 1.2,
+    daysAir: 3,
+    daysSea: 35,
+  };
+
+  const volWeight = calculateVolumetricWeight(data.dimensiones || "", data.piezas ?? 1);
   const chargeableWeight = Math.max(data.peso, volWeight);
 
   const breakdown: Record<string, number> = {};
@@ -136,7 +152,7 @@ export function generateQuote(data: QuoteInput): QuoteResult {
     volumetricWeight: Math.round(volWeight * 100) / 100,
     transitDays: data.modalidad === "aerea" ? dest.daysAir : dest.daysSea,
     modality: data.modalidad,
-    route: `Guangzhou → ${data.destino}`,
+    route: `${data.origen} → ${data.destino}`,
     incoterm: "DDP Puerta a Puerta",
     validity: "7 días",
     insuranceIncluded: true,

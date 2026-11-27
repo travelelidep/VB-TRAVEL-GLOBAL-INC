@@ -52,6 +52,7 @@ POST /api/agents/orchestrator
 | POST | `/api/agents/documentos` | Checklist documental |
 | POST | `/api/leads/casillero` | Alta de casillero + tareas de bienvenida |
 | POST | `/api/automation/tick` | Procesa la cola (requiere `CRON_SECRET` si está definido) |
+| POST | `/api/agents/tick` | Disparo manual desde el panel (12 tareas, enfriamiento de 10 s) |
 | POST | `/api/webhooks/carrier` | Eventos del transportista → rastreo + tarea de aviso |
 | POST | `/api/webhooks/aduana` | Estados del DUA → tarea del agente aduanal |
 | POST | `/api/webhooks/whatsapp` | Mensajes de WhatsApp → orquestador → respuesta |
@@ -79,12 +80,13 @@ curl -X POST localhost:3000/api/automation/tick
 
 ## Despliegue en Render
 
-El repositorio incluye `render.yaml` (Blueprint) con el servicio web y el cron de agentes.
+El repositorio incluye `render.yaml` (Blueprint) con el servicio web y, comentado, un cron opcional.
 
 1. En Render: **New → Blueprint** y selecciona este repositorio.
 2. Render crea:
    - `vb-travel-global` (web, health check en `/api/health`, deploy automático desde `main`).
-   - `vb-agents-automation` (cron cada 15 minutos que llama a `/api/automation/tick`).
+   - El planificador interno ya procesa la cola cada 15 minutos; el cron
+     `vb-agents-automation` del blueprint está comentado porque exige plan de pago.
 3. Completa las variables marcadas como secretas (`sync: false`):
 
 | Variable | Obligatoria | Uso |

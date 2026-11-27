@@ -24,6 +24,28 @@ function parsePeso(message: string): number | undefined {
   return Number(match[1].replace(",", "."));
 }
 
+function parseBultos(message: string): {
+  piezas?: number;
+  dimensiones?: string;
+  pesoTotal?: number;
+} {
+  const dims = message.match(
+    /(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)/i
+  );
+  const bultos = message.match(/(\d+)\s*(cajas?|bultos?|piezas?|paletas?)/i);
+  const porUnidad = message.match(
+    /(\d+)\s*(?:cajas?|bultos?|piezas?|paletas?)\s*de\s*(\d+(?:[.,]\d+)?)\s*(?:kg|kilos?|kilogramos?)/i
+  );
+
+  return {
+    piezas: bultos ? Number(bultos[1]) : undefined,
+    dimensiones: dims ? `${dims[1]}x${dims[2]}x${dims[3]}`.replace(/,/g, ".") : undefined,
+    pesoTotal: porUnidad
+      ? Number(porUnidad[1]) * Number(porUnidad[2].replace(",", "."))
+      : undefined,
+  };
+}
+
 function parseValor(message: string): number | undefined {
   const match = message.match(/(?:\$|usd)\s*(\d+(?:[.,]\d+)?)\s*(k|mil)?/i) ??
     message.match(/valor[^\d]{0,10}(\d+(?:[.,]\d+)?)/i);
@@ -41,8 +63,11 @@ function buildPayload(input: OrchestratorInput): Record<string, unknown> {
   const payload: Record<string, unknown> = { ...(input.contexto ?? {}) };
   const message = input.message;
 
+  const bultos = parseBultos(message);
   if (!payload.destino) payload.destino = detectCiudad(message);
-  if (!payload.peso) payload.peso = parsePeso(message);
+  if (!payload.dimensiones && bultos.dimensiones) payload.dimensiones = bultos.dimensiones;
+  if (!payload.piezas && bultos.piezas) payload.piezas = bultos.piezas;
+  if (!payload.peso) payload.peso = bultos.pesoTotal ?? parsePeso(message);
   if (!payload.valor) payload.valor = parseValor(message);
   if (!payload.modalidad) payload.modalidad = parseModalidad(message);
   if (!payload.contenido) payload.contenido = message.slice(0, 120);

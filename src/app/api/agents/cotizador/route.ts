@@ -32,6 +32,8 @@ function normalizePayload(body: Record<string, unknown>): Record<string, unknown
     (pesoPorCaja ? pesoPorCaja * cajas : undefined) ??
     (pesoPalet ? pesoPalet * paletas : undefined);
 
+  const piezas = num(body.piezas) ?? num(body.cajas) ?? num(body.paletas) ?? 1;
+
   const largo = str(body.largo);
   const ancho = str(body.ancho);
   const alto = str(body.alto);
@@ -49,6 +51,7 @@ function normalizePayload(body: Record<string, unknown>): Record<string, unknown
     destino: str(body.destino) ?? str(body.destinoFinal),
     peso,
     dimensiones,
+    piezas,
     valor: num(body.valor) ?? num(body.valorCarga),
     contenido: str(body.contenido),
     notas: str(body.notas),

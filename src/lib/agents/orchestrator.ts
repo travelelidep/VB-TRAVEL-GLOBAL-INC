@@ -23,9 +23,20 @@ function normalize(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
+const LIMITE_PALABRA_CORTA = 3;
+
+function coincide(clean: string, keyword: string): boolean {
+  const k = normalize(keyword);
+  if (!k) return false;
+  if (k.length > LIMITE_PALABRA_CORTA) return clean.includes(k);
+  // Siglas cortas (bl, kg, awb, dua...) solo como palabra: evita que "problema" active "bl".
+  const escapado = k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^a-z])${escapado}(?![a-z])`).test(clean);
+}
+
 function scoreAgent(agent: AgentDefinition, clean: string): number {
   return agent.keywords.reduce((score, keyword) => {
-    return clean.includes(normalize(keyword)) ? score + 1 : score;
+    return coincide(clean, keyword) ? score + 1 : score;
   }, 0);
 }
 

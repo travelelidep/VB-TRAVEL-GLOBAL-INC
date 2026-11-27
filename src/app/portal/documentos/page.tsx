@@ -143,7 +143,7 @@ export default function DocumentosPage() {
               <span className="text-sm text-slate-500">Categoría:</span>
               <select
                 value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value as any)}
+                onChange={(e) => setFilterCategory(e.target.value as typeof filterCategory)}
                 className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
               >
                 <option value="all">Todas</option>
@@ -156,7 +156,7 @@ export default function DocumentosPage() {
               <span className="text-sm text-slate-500">Estado:</span>
               <select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
+                onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
                 className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
               >
                 <option value="all">Todos</option>

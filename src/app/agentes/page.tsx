@@ -153,7 +153,7 @@ export default function AgentesPage() {
   async function ejecutarTick() {
     setTick("ejecutando…");
     try {
-      const res = await fetch("/api/automation/tick", { method: "POST" });
+      const res = await fetch("/api/agents/tick", { method: "POST" });
       const data = await res.json();
       setTick(data.resumen ?? data.error ?? "Sin resultado");
       void cargar();

@@ -49,7 +49,6 @@ export interface DocItem {
   mandatory: boolean;
   description: string;
   status?: string;
-  templateUrl?: string;
   generated?: boolean;
   authority?: string;
   timing?: string;
@@ -68,7 +67,6 @@ export function generateDocumentPack(data: DocsInput): DocumentPack {
   const baseDocs: DocItem[] = DOCUMENTS[modalidad].map((d) => ({
     ...d,
     status: "pending",
-    templateUrl: `/templates/${d.code.toLowerCase()}.pdf`,
     generated: false,
   }));
 
