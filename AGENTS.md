@@ -56,3 +56,18 @@ node scripts/automation-tick.mjs   # dispara un tick contra AGENTS_BASE_URL
   `/api/agents/cotizador` normaliza ese payload al contrato de `quoteSchema`.
 - Las pruebas manuales útiles están documentadas en el README (curl de health, cotizador,
   casillero, webhooks y tick).
+
+## Verificación del 2026-11-27
+
+- `npm run lint` queda en 0 errores (3 avisos: `<img>` en Destinations/BuscadorProductos y
+  fuente custom en `layout.tsx`). `npm ci` ya funciona: el `package-lock.json` está en sync.
+- `POST /api/agents/tick` es el disparo manual del panel `/agentes`; procesa 12 tareas y
+  aplica un enfriamiento de 10 s por instancia. El protegido con secreto sigue siendo
+  `/api/automation/tick`.
+- Enrutado por palabras clave: las siglas de 3 letras o menos (`bl`, `kg`, `awb`, `dua`)
+  solo cuentan como palabra completa; de lo contrario "problema" activaba a documentos.
+- El chat entiende "N cajas de AxBxC de P kg": calcula peso total, piezas y volumen.
+- `generateQuote` usa `piezas` para multiplicar el peso volumétrico y resuelve destinos
+  compuestos ("Puerto Ordaz", "San Cristóbal") sin acentos.
+- El push a GitHub está bloqueado (403): el token de la sesión es de solo lectura.
+  Los cambios deben subirse desde una cuenta con permiso de escritura.
