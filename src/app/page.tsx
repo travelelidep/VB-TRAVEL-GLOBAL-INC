@@ -1,6 +1,7 @@
 ﻿import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Servicios from "@/components/Servicios";
+import Productos from "@/components/Productos";
 import ComoFunciona from "@/components/ComoFunciona";
 import Tarifas from "@/components/Tarifas";
 import CotizadorWizard from "@/components/CotizadorWizard";
@@ -16,6 +17,7 @@ export default function Home() {
       <main className="min-h-screen">
         <Hero />
         <Servicios />
+        <Productos />
         <ComoFunciona />
         <Tarifas />
         <CotizadorWizard />

@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface CotizacionData {
   tipoCarga: "paqueteria" | "carga_suelta" | "paletizada" | "contenedor";
@@ -58,44 +58,80 @@ const steps = [
   { id: 4, title: "Tus Datos", desc: "Para enviarte la cotización" },
 ];
 
+interface ProductoSeleccionado {
+  titulo?: string;
+  contenido?: string;
+  precio?: number | null;
+  valorCarga?: string;
+  peso?: string;
+  pesoKg?: number | null;
+  dimensiones?: string | null;
+  proveedor?: string;
+  supplier?: string;
+  origen?: string;
+  source?: string;
+  url?: string | null;
+}
+
+function partesDimensiones(dimensiones?: string | null): string[] {
+  return (dimensiones ?? "")
+    .split("×")
+    .map((parte) => parte.replace(/[^0-9.,]/g, "").trim());
+}
+
 export default function CotizadorWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<CotizacionData>(initialData);
   const [submitted, setSubmitted] = useState(false);
   const [productPrefilled, setProductPrefilled] = useState(false);
 
+  const aplicarProducto = useCallback((producto: ProductoSeleccionado) => {
+    const pesoTexto = producto.peso || (producto.pesoKg != null ? String(producto.pesoKg) : "");
+    const pesoNumero = Number.isFinite(parseFloat(pesoTexto)) ? String(parseFloat(pesoTexto)) : "";
+    const [largo = "", ancho = "", alto = ""] = partesDimensiones(producto.dimensiones);
+    const titulo = producto.contenido || producto.titulo || "";
+    const proveedor = producto.supplier || producto.proveedor || "";
+    const origen = producto.source || producto.origen || "";
+    const valor = producto.valorCarga || (producto.precio != null ? String(producto.precio) : "");
+
+    setData((prev) => ({
+      ...prev,
+      valorCarga: valor,
+      contenido: titulo,
+      pesoPorCaja: pesoNumero,
+      largo,
+      ancho,
+      alto,
+      tipoCarga: parseFloat(pesoTexto) < 30 ? "paqueteria" : "carga_suelta",
+      notas: `Producto desde catálogo: ${titulo}\nProveedor: ${proveedor}\nFuente: ${origen}${producto.url ? `\nURL: ${producto.url}` : ""}`,
+    }));
+    setProductPrefilled(true);
+  }, []);
+
   useEffect(() => {
-    // Diferido: el prellenado desde el buscador no debe bloquear el primer render.
     const timer = setTimeout(() => {
       const stored = localStorage.getItem("vb_selected_product");
-      if (!stored || productPrefilled) return;
+      if (!stored) return;
 
       try {
-        const product = JSON.parse(stored);
-        setData((prev) => ({
-          ...prev,
-          valorCarga: product.valorCarga || "",
-          contenido: product.contenido || "",
-          pesoPorCaja: product.peso || "",
-          largo: product.dimensiones?.split("×")[0]?.replace(" cm", "") || "",
-          ancho: product.dimensiones?.split("×")[1]?.replace(" cm", "") || "",
-          alto: product.dimensiones?.split("×")[2]?.replace(" cm", "") || "",
-          tipoCarga: parseFloat(product.peso || "0") < 30 ? "paqueteria" : "carga_suelta",
-          notas: `Producto desde buscador: ${product.contenido}\nProveedor: ${product.supplier}\nFuente: ${product.source}\nURL: ${product.url}`,
-        }));
-        setProductPrefilled(true);
+        aplicarProducto(JSON.parse(stored) as ProductoSeleccionado);
         localStorage.removeItem("vb_selected_product");
-        setTimeout(
-          () => alert("Producto cargado automáticamente del buscador. Revisa los datos y continúa."),
-          500
-        );
-      } catch (e) {
-        console.error("Error parsing product:", e);
+      } catch (error) {
+        console.error("Producto guardado inválido:", error);
       }
     }, 0);
 
-    return () => clearTimeout(timer);
-  }, [productPrefilled]);
+    const alSeleccionar = (evento: Event) => {
+      const detalle = (evento as CustomEvent<ProductoSeleccionado>).detail;
+      if (detalle) aplicarProducto(detalle);
+    };
+
+    window.addEventListener("vb:producto", alSeleccionar);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("vb:producto", alSeleccionar);
+    };
+  }, [aplicarProducto]);
 
   const updateData = (field: keyof CotizacionData, value: string | number) => {
     setData((prev) => ({ ...prev, [field]: value }));
@@ -173,8 +209,8 @@ export default function CotizadorWizard() {
                 <i className="fas fa-check text-green-500"></i>
               </div>
               <div>
-                <p className="font-semibold text-green-700">Producto cargado desde el buscador</p>
-                <p className="text-sm text-green-600">Los campos de valor, contenido, peso y dimensiones se pre-completaron automáticamente.</p>
+                <p className="font-semibold text-green-700">Producto cargado desde el catálogo</p>
+                <p className="text-sm text-green-600">Los campos de valor, contenido, peso y dimensiones se completaron solos. Revísalos y continúa.</p>
               </div>
             </div>
           </div>
@@ -399,7 +435,8 @@ export default function CotizadorWizard() {
                         <label className="block text-sm font-medium text-slate-700 mb-1">Peso por Caja (kg)</label>
                         <input
                           type="number"
-                          step="0.1"
+                          step="0.01"
+                          min="0"
                           value={data.pesoPorCaja}
                           onChange={(e) => updateData("pesoPorCaja", e.target.value)}
                           className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
